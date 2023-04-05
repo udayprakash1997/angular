@@ -6,6 +6,7 @@
 trigger:
 - master
 
+
 # Build Stage
 stages:
 - stage: 'QA'
@@ -19,7 +20,7 @@ stages:
 
       - checkout: self
 
-      - template: DockerBuild.yml@Templates
+      - template: DockerBuild.yml
         parameters:
           ProjectName: 'angular-app'
           ConnectionTypeName: 'foodalert-prakash'
