@@ -6,28 +6,34 @@
 trigger:
 - master
 
-pool:
-  vmImage: ubuntu-latest
+resources:
+  repositories:
+    - repository: 'Templates'
+      name: 'angular'
+      type: github
+      ref: main
+      endpoint: Unity
 
-steps:
-- task: NodeTool@0
-  inputs:
-    versionSpec: '10.x'
-  displayName: 'Install Node.js'
+# Build Stage
+stages:
+- stage: 'QA'
+  displayName: "Build and Push"
+  jobs:
+  - job: Build
+    displayName: Build & Deploy
+    pool:
+      vmImage: ubuntu-latest
+    steps:
 
-- script: |
-    npm install
-    npm run build
-  displayName: 'npm install and build'
-  
+      - checkout: self
 
-- task: PublishBuildArtifacts@1
-  inputs:
-    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-    ArtifactName: 'drop'
-    publishLocation: 'Container'
-- task: DownloadBuildArtifacts@1
-  inputs:
-    buildType: 'current'
-    downloadType: 'single'
-    downloadPath: '$(System.ArtifactsDirectory)'
+      - template: DockerBuild.yml@Templates
+        parameters:
+          ProjectName: 'angular-app'
+          ConnectionTypeName: 'foodalert-prakash'
+          RegistryServiceConnection: 'Acr-connection'
+          WebAppName: 'appservicefoodalerttest0000'
+          repository: 'udayangular'
+          containerRegistry: udaycontainer.azurecr.io
+          tag: 'Build-$(Build.BuildNumber)'
+          token: 'false'
