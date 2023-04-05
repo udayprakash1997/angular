@@ -6,13 +6,6 @@
 trigger:
 - master
 
-resources:
-  repositories:
-    - repository: 'Templates'
-      name: 'angular'
-      type: github
-      ref: main
-
 # Build Stage
 stages:
 - stage: 'QA'
