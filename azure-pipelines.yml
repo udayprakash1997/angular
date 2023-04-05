@@ -8,27 +8,27 @@ trigger:
 
 pool:
       vmImage: ubuntu-latest
+
+variables:
+  azureSubscription: 'foodalert-prakash'
+  appName: 'appservicefoodalerttest0000'
+  packageDirectory: '$(System.DefaultWorkingDirectory)/dist'
+
 steps:
 - task: NodeTool@0
   inputs:
-    versionSource: 'spec'
-    versionSpec: '6.x'
+    versionSpec: '14.x'
+  displayName: 'Install Node.js'
 
 - script: |
     npm install
-  displayName: 'npm install'
+    npm run build -- --prod
+  displayName: 'Install dependencies and build the app'
 
-- script: |
-    npm uninstall -g angular-cli
-    npm cache clean or npm cache verify #(if npm > 5)
-    npm install -g @angular/cli@7.1.4
-  displayName: 'npm install @angular/cli'
-  condition: 
-- task: AzureRmWebAppDeployment@4
+- task: AzureWebApp@1
   inputs:
-    ConnectionType: 'AzureRM'
-    azureSubscription: 'Free Trial(3c5c88e8-9da8-4db9-aad7-72fe989451f8)'
-    appType: 'webAppContainer'
-    WebAppName: 'appservicefoodalerttest0000'
-    DockerNamespace: 'udaycontainer'
-    DockerRepository: 'latest'
+    azureSubscription: $(azureSubscription)
+    appName: $(appName)
+    package: '$(packageDirectory)/**/*.zip'
+    deploymentMethod: 'auto'
+  displayName: 'Deploy to Azure App Service'
