@@ -1,0 +1,107 @@
+parameters:
+- name: BuildSteps
+  type: object
+  default: []
+
+- name: ProjectName
+  type: string
+  default: ''
+
+- name: sonarqube
+  type: boolean
+  default: 'false'
+
+- name: deploy
+  type: boolean
+  default: true
+
+- name: ConnectionTypeName
+  type: string
+  default: ''
+- name: RegistryServiceConnection
+  type: string
+  default: ''
+
+- name: containerRegistry
+  type: string
+  default: ''
+
+- name: repository
+  type: string
+  default: ''
+
+- name: WebAppName
+  type: string
+  default: ''
+
+- name: tag
+  type: string
+  default: ''
+
+- name: webrestart
+  type: boolean
+  default: 'true'
+
+- name: token
+  type: boolean
+  default: 'true'
+
+- name: buildarg
+  type: string
+  # default: []
+  default: ''
+
+
+steps:
+
+- ${{ parameters.BuildSteps }}
+- task: replacetokens@5
+  inputs:
+    targetFiles: |
+      **/*.env
+      **/*.env.production
+      public/config.js
+      **/*appsettings.json
+    encoding: 'auto'
+    tokenPattern: 'azpipelines'
+    writeBOM: true
+    actionOnMissing: 'warn'
+    keepToken: false
+    actionOnNoFiles: 'warn'
+    enableTransforms: false
+    enableRecursion: false
+    useLegacyPattern: false
+    enableTelemetry: false
+  enabled: ${{ parameters.token }}
+
+# Build Docker Images
+- task: Docker@2
+  displayName: Login to ACR
+  inputs:
+    command: login
+    containerRegistry: '${{Parameters.RegistryServiceConnection}}'
+
+- task: Docker@2
+  displayName: Docker Build
+  inputs:
+    containerRegistry: '${{Parameters.RegistryServiceConnection}}'
+    repository: '${{Parameters.repository}}'
+    command: 'build'
+    tags: |
+        ${{Parameters.tag}}
+    #arguments: '--build-arg vers=${{Parameters.buildarg}} --build-arg FEED_ACCESSTOKEN=$(FEED_ACCESSTOKEN)'
+
+- task: Docker@2
+  displayName: Docker Push
+  inputs:
+    repository: '${{Parameters.repository}}'
+    command: 'push'
+    tags: |
+        ${{Parameters.tag}}
+- task: AzureWebAppContainer@1
+  displayName: 'Azure Web App on Container Deploy'
+  inputs:
+    azureSubscription: '${{Parameters.ConnectionTypeName}}'
+    appName: '${{Parameters.WebAppName}}'
+    containers: ${{Parameters.containerRegistry}}/${{Parameters.repository}}:${{Parameters.tag}}
+  enabled: '${{parameters.deploy}}'
