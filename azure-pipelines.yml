@@ -6,27 +6,29 @@
 trigger:
 - master
 
-
-# Build Stage
-stages:
-- stage: 'QA'
-  displayName: "Build and Push"
-  jobs:
-  - job: Build
-    displayName: Build & Deploy
-    pool:
+pool:
       vmImage: ubuntu-latest
-    steps:
+steps:
+- task: NodeTool@0
+  inputs:
+    versionSource: 'spec'
+    versionSpec: '6.x'
 
-      - checkout: self
+- script: |
+    npm install
+  displayName: 'npm install'
 
-      - template: DockerBuild.yml
-        parameters:
-          ProjectName: 'angular-app'
-          ConnectionTypeName: 'foodalert-prakash'
-          RegistryServiceConnection: 'Acr-connection'
-          WebAppName: 'appservicefoodalerttest0000'
-          repository: 'udayangular'
-          containerRegistry: udaycontainer.azurecr.io
-          tag: 'Build-$(Build.BuildNumber)'
-          token: 'false'
+- script: |
+    npm uninstall -g angular-cli
+    npm cache clean or npm cache verify #(if npm > 5)
+    npm install -g @angular/cli@7.1.4
+  displayName: 'npm install @angular/cli'
+  condition: 
+- task: AzureRmWebAppDeployment@4
+  inputs:
+    ConnectionType: 'AzureRM'
+    azureSubscription: 'Free Trial(3c5c88e8-9da8-4db9-aad7-72fe989451f8)'
+    appType: 'webAppContainer'
+    WebAppName: 'appservicefoodalerttest0000'
+    DockerNamespace: 'udaycontainer'
+    DockerRepository: 'latest'
