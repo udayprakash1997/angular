@@ -1,4 +1,5 @@
-FROM node:18.12.0-alpine as builder
+#FROM node:18.12.0-alpine as builder
+FROM node:19-bullseye as builder
 
 #LABEL image.title="H&S Shell app" \
  #   image.description="Docker image for Shell app"
