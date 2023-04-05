@@ -12,7 +12,6 @@ resources:
       name: 'angular'
       type: github
       ref: main
-      endpoint: Unity
 
 # Build Stage
 stages:
