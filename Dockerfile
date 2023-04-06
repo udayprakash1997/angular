@@ -14,7 +14,7 @@ COPY package-lock.json ./
 #COPY /prod/.npmrc .
 RUN npm install -g pnpm
 RUN pnpm install --force
-RUN npx kendo-ui-license activate
+#RUN npx kendo-ui-license activate
 
 
 
