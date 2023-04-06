@@ -24,7 +24,8 @@ COPY . ./
 # The test command will force Jest to run in CI-mode, and tests will only run once instead of launching the watcher
 ENV CI=true
 
-RUN pnpm build
+#RUN pnpm build
+RUN npm run build
 
 # STAGE 2: production environment
 #######################################
