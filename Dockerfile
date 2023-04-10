@@ -4,8 +4,8 @@ COPY . .
 RUN npm install
 RUN npm run build --prod
 #stage 2
-FROM nginx:alpine
-COPY --from=node /app/src/app /usr/share/nginx/html
+#FROM nginx:alpine
+#COPY --from=node /app/src/app /usr/share/nginx/html
 
 #FROM node:18.12.0-alpine as builder
 #FROM node:19-bullseye as builder
