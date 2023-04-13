@@ -6,27 +6,29 @@
 trigger:
 - master
 
-
-# Build Stage
-stages:
-- stage: 'QA'
-  displayName: "Build and Push"
-  jobs:
-  - job: Build
-    displayName: Build & Deploy
-    pool:
+pool:
       vmImage: ubuntu-latest
-    steps:
 
-      - checkout: self
+variables:
+  azureSubscription: 'foodalert-prakash'
+  appName: 'appservicefoodalerttest0000'
+  packageDirectory: '$(System.DefaultWorkingDirectory)/dist'
 
-      - template: DockerBuild.yml
-        parameters:
-          ProjectName: 'angular-app'
-          ConnectionTypeName: 'foodalert-prakash'
-          RegistryServiceConnection: 'Acr-connection'
-          WebAppName: 'appservicefoodalerttest0000'
-          repository: 'udayangular'
-          containerRegistry: udaycontainer.azurecr.io
-          tag: 'Build-$(Build.BuildNumber)'
-          token: 'false'
+steps:
+- task: NodeTool@0
+  inputs:
+    versionSpec: '14.x'
+  displayName: 'Install Node.js'
+
+- script: |
+    npm install
+    npm run build -- --prod
+  displayName: 'Install dependencies and build the app'
+
+- task: AzureWebApp@1
+  inputs:
+    azureSubscription: $(azureSubscription)
+    appName: $(appName)
+    package: '$(packageDirectory)/**/*.zip'
+    deploymentMethod: 'auto'
+  displayName: 'Deploy to Azure App Service'
